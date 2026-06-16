@@ -1,0 +1,31 @@
+{
+  "name": "mcp_server_client_langraph_mono_repo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+  "build": "npm run build --workspaces",
+
+    "build:gateway": "npm run build -w @company/gateway",
+    "build:hr": "npm run build -w @company/hr-mcp-server",
+
+    "start:gateway": "npm run start -w @company/gateway",
+    "start:hr": "npm run start -w @company/hr-mcp-server",
+
+    "dev:gateway": "npm run dev -w @company/gateway",
+    "dev:hr": "npm run dev -w @company/hr-mcp-server"
+  },
+  "author": "utsav_kumar_jha",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "eslint": "^10.5.0",
+    "prettier": "^3.8.4",
+    "tsx": "^4.22.4",
+    "turbo": "^2.9.18",
+    "typescript": "^6.0.3"
+  }
+}
