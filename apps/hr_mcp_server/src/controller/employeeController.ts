@@ -10,3 +10,8 @@ export const createEmpController= async ( {id,firstName,lastName,email,position,
                const newUser= await user.save()
                return newUser
 }
+
+ export const deleteByIdController= async (id:string)=>{
+   const result=  await Employee.findByIdAndDelete(id);
+   return result;
+}

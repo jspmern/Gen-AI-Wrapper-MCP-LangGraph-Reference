@@ -7,6 +7,7 @@ dotenv.config({
 
  export  const config = {
   PORT: process.env.PORT,
-  MONGODB_URI: process.env.MONGODB_URI
+  MONGODB_URI: process.env.MONGODB_URI,
+  HR_PORT:process.env.HR_PORT
 };
 export * from "./index";

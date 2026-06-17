@@ -1,6 +1,6 @@
-import { Employee} from "@company/database"
+ 
 import { z } from "zod";
-import { createEmpController, getByIdController } from "../controller/employeeController";
+import { createEmpController, deleteByIdController, getByIdController } from "../controller/employeeController";
 export const hrToolHandler = (server:any): void => {
     /** this is the tool for getting employee information by id */
     server.registerTool(
@@ -36,7 +36,7 @@ export const hrToolHandler = (server:any): void => {
                 id: z.string().describe(
                     "Unique id for new employee"
                 ),
-                   fristName: z.string().describe(
+                   firstName: z.string().describe(
                     "first name of employee"
                 ),
                     lastName: z.string().describe(
@@ -66,6 +66,32 @@ export const hrToolHandler = (server:any): void => {
                     {
                         type: "text",
                         text: ` ${newUser} is created successfully `,
+                    },
+                ],
+            };
+        }
+    )
+
+    /** this is for the delete employee histroy by id */
+     /** this is the tool for getting employee information by id */
+    server.registerTool(
+        "delete_employee",
+        {
+            description: "delete employee by id",
+            inputSchema: {
+                id: z.string().describe(
+                    "This is the id for deleting user information"
+                ),
+            },
+        },
+        async ({ id }:{id:string}) => {
+            const  result = await  deleteByIdController(id)
+            const finalResult = JSON.stringify(result);
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: finalResult,
                     },
                 ],
             };

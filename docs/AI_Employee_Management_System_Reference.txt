@@ -1,0 +1,200 @@
+
+AI EMPLOYEE MANAGEMENT SYSTEM (LangChain + LangGraph + MCP)
+
+GOAL
+Build a production-style AI Employee Management System covering:
+- LangChain
+- LangGraph
+- MCP Server
+- MCP Client
+- Human In The Loop (HITL)
+- Interrupts
+- Guardrails
+- PII Protection
+- Memory
+- Summarization
+- Audit Logs
+- RBAC
+
+ARCHITECTURE
+
+User
+ |
+AI Agent (LangGraph)
+ |
+MCP Client
+ |
+-------------------------------------------------
+|                 |                 |
+HR MCP Server   Leave MCP Server  Finance MCP Server
+-------------------------------------------------
+ |
+Database
+
+MCP SERVERS
+
+1. HR MCP Server
+Tools:
+- getEmployee
+- createEmployee
+- updateEmployee
+- deleteEmployee
+
+Resources:
+- employee://all
+- employee://{id}
+
+2. Leave MCP Server
+Tools:
+- applyLeave
+- approveLeave
+- rejectLeave
+- getLeaveBalance
+
+Resources:
+- leave://history
+
+3. Finance MCP Server
+Tools:
+- getSalary
+- applyReimbursement
+- approveReimbursement
+
+Resources:
+- finance://salary
+
+LANGGRAPH WORKFLOW
+
+START
+ |
+Intent Detection
+ |
+HR / Leave / Finance
+ |
+Tool Execution
+ |
+END
+
+HUMAN IN THE LOOP (HITL)
+
+Sensitive Actions:
+- deleteEmployee
+- updateSalary
+- approveReimbursement
+
+Flow:
+Agent -> Interrupt -> Manager Approval -> Resume -> Execute Tool
+
+Example:
+interrupt({
+ action: "DELETE_EMPLOYEE",
+ employeeId: "123"
+})
+
+After approval:
+graph.resume("approved")
+
+GUARDRAILS
+
+Block:
+- PAN
+- Aadhaar
+- Passport
+- Sensitive employee information
+
+PII PROTECTION
+
+Before:
+{
+  "name": "Rahul",
+  "salary": 100000,
+  "aadhar": "123456789012"
+}
+
+After:
+{
+  "name": "Rahul",
+  "salary": "*****",
+  "aadhar": "XXXXXXXX9012"
+}
+
+MEMORY
+
+Store:
+- User role
+- Department
+- Previous requests
+- Manager information
+
+SUMMARIZATION
+
+Convert long conversations into short summaries.
+
+AUDIT LOGGING
+
+Log every action:
+{
+ "user":"rahul",
+ "action":"updateSalary",
+ "time":"2026-06-16"
+}
+
+DATABASE TABLES
+
+- employees
+- leave_requests
+- salaries
+- reimbursements
+- approvals
+- audit_logs
+
+FOLDER STRUCTURE
+
+project/
+├── mcp-servers/
+│   ├── hr-server/
+│   ├── leave-server/
+│   └── finance-server/
+├── mcp-client/
+├── agent/
+│   ├── graph/
+│   ├── nodes/
+│   ├── memory/
+│   └── middleware/
+├── auth/
+├── guardrails/
+├── pii/
+├── audit/
+└── database/
+
+LEARNING OUTCOMES
+
+MCP:
+- Multiple MCP servers
+- Resources
+- Tools
+- Client orchestration
+
+LangChain:
+- Agents
+- Tools
+- Memory
+- Middleware
+- Summarization
+
+LangGraph:
+- State
+- Nodes
+- Edges
+- Interrupts
+- Resume
+- HITL
+- Checkpointing
+
+Production Concepts:
+- Authentication
+- Authorization (RBAC)
+- PII Masking
+- Guardrails
+- Audit Logs
+- Approval Workflows
