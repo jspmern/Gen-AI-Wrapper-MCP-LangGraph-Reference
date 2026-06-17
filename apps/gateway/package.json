@@ -12,9 +12,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@company/config": "*",
+    "@company/database": "*",
     "@company/logger": "*",
-    "@company/database":"*",
-    "@company/config":"*",
+    "@langchain/core": "^1.1.49",
+    "@langchain/langgraph": "^1.4.2",
     "dotenv": "^17.4.2",
     "express": "^5.2.1"
   },
