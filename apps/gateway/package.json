@@ -17,6 +17,7 @@
     "@company/logger": "*",
     "@langchain/core": "^1.1.49",
     "@langchain/langgraph": "^1.4.2",
+    "@langchain/mcp-adapters": "^1.1.3",
     "@langchain/openai": "^1.4.7",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

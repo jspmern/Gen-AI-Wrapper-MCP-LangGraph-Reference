@@ -15,6 +15,6 @@ app.get("/health", (req, res) => {
 /**this is the listing the app */
 app.listen(config_1.config.PORT, async () => {
     await (0, database_1.connectDatabase)();
-    (0, graph_1.main)();
     console.log(`server is connect at http://localhost:${config_1.config.PORT}`);
+    (0, graph_1.main)();
 });

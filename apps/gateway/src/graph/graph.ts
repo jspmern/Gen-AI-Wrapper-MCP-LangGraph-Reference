@@ -1,39 +1,77 @@
+import { END, MemorySaver, START, StateGraph } from "@langchain/langgraph";
+import { ToolNode, toolsCondition } from "@langchain/langgraph/prebuilt";
+import { ChatOpenAI } from "@langchain/openai";
+import { SystemMessage } from "@langchain/core/messages";
 
- import { END, MemorySaver, START, StateGraph } from '@langchain/langgraph';
- import { MessagesState } from './state';
-import { OpenAI } from "@langchain/openai"
-import { config } from '@company/config';
-
-const client = new OpenAI({
-  model: "gpt-3.5-turbo-instruct",
-  temperature: 0,
-  maxTokens: undefined,
-  timeout: undefined,
-  maxRetries: 2,
-  apiKey:config.OPENAI_API_KEY,
-  // other params...
-})
+import { MessagesState } from "./state";
+import { config } from "@company/config";
+import { getHrMcpTools } from "../mcp/hrMcpClient";
 
 const checkpointer = new MemorySaver();
 
+export async function createGraph() {
+  const hrTools = await getHrMcpTools();
 
-async function llmCall(state : typeof MessagesState.State )
-{
-  console.log("hello i am messge",state.messages)
-  const completion = await client.invoke(state.messages)
-    return {messages:[completion]}
+  const llm = new ChatOpenAI({
+    model: "gpt-4.1-mini",
+    temperature: 0,
+    apiKey: config.OPENAI_API_KEY,
+  }).bindTools(hrTools);
+
+  async function llmCall(state: typeof MessagesState.State) {
+    console.log("messages:", state.messages);
+
+    const response = await llm.invoke([
+      new SystemMessage("You are Utsav HR bot. Use HR MCP tools when needed."),
+      ...state.messages,
+    ]);
+
+    return {
+      messages: [response],
+    };
+  }
+
+  const toolNode = new ToolNode(hrTools);
+
+  const graph = new StateGraph(MessagesState)
+    .addNode("llmCall", llmCall)
+    .addNode("tools", toolNode)
+    .addEdge(START, "llmCall")
+    .addConditionalEdges("llmCall", toolsCondition, {
+      tools: "tools",
+      [END]: END,
+    })
+    .addEdge("tools", "llmCall")
+    .compile({
+      checkpointer,
+    });
+
+  return graph;
 }
-const agent = new StateGraph(MessagesState)
-  .addNode("llmCall", llmCall)
-  .addEdge(START, "llmCall")
-  .addEdge("llmCall",END)
-  .compile({checkpointer});
+
+export async function main() {
+  const agent = await createGraph();
+
+  const result = await agent.invoke(
+    {
+      messages: [
+        {
+          role: "user",
+          content: "show me  detils of 6a3263090f95b18b83163a31 this id",
+        },
+      ],
+    },
+    {
+      configurable: {
+        thread_id: "1",
+      },
+    }
+  );
+
+  console.log("**", result);
+
+  const lastMessage = result.messages[result.messages.length - 1];
+  console.log("AI:", lastMessage.content);
+}
+
  
-export async function main()
-{
-   const result = await agent.invoke({
-   messages: [{role:"system",content:"you are a utsav bot"},{role:'user',content:"hii"}],
-},{ configurable: { thread_id: "1" } });
-
-console.log('**',result)
-}
