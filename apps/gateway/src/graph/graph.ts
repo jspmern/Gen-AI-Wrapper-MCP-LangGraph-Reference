@@ -1,7 +1,7 @@
 import { END, MemorySaver, START, StateGraph } from "@langchain/langgraph";
 import { ToolNode, toolsCondition } from "@langchain/langgraph/prebuilt";
 import { ChatOpenAI } from "@langchain/openai";
-import { SystemMessage } from "@langchain/core/messages";
+import { AIMessage, SystemMessage } from "@langchain/core/messages";
 
 import { MessagesState } from "./state";
 import { config } from "@company/config";
@@ -31,15 +31,26 @@ export async function createGraph() {
     };
   }
 
+async function whereShouldGo(state: typeof MessagesState.State) {
+  const lastMessage = state.messages[state.messages.length - 1] as AIMessage;
+
+  const toolCalls = (lastMessage as any).tool_calls;
+  if (Array.isArray(toolCalls) && toolCalls.length > 0) {
+    return "tools";
+  }
+
+  return END;
+}
+
   const toolNode = new ToolNode(hrTools);
 
   const graph = new StateGraph(MessagesState)
     .addNode("llmCall", llmCall)
     .addNode("tools", toolNode)
     .addEdge(START, "llmCall")
-    .addConditionalEdges("llmCall", toolsCondition, {
+    .addConditionalEdges("llmCall", whereShouldGo, {
       tools: "tools",
-      [END]: END,
+    [END]: END,
     })
     .addEdge("tools", "llmCall")
     .compile({

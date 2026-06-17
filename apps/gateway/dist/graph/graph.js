@@ -27,12 +27,20 @@ async function createGraph() {
             messages: [response],
         };
     }
+    async function whereShouldGo(state) {
+        const lastMessage = state.messages[state.messages.length - 1];
+        const toolCalls = lastMessage.tool_calls;
+        if (Array.isArray(toolCalls) && toolCalls.length > 0) {
+            return "tools";
+        }
+        return langgraph_1.END;
+    }
     const toolNode = new prebuilt_1.ToolNode(hrTools);
     const graph = new langgraph_1.StateGraph(state_1.MessagesState)
         .addNode("llmCall", llmCall)
         .addNode("tools", toolNode)
         .addEdge(langgraph_1.START, "llmCall")
-        .addConditionalEdges("llmCall", prebuilt_1.toolsCondition, {
+        .addConditionalEdges("llmCall", whereShouldGo, {
         tools: "tools",
         [langgraph_1.END]: langgraph_1.END,
     })
