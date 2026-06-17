@@ -26,6 +26,7 @@ dotenv_1.default.config({
 exports.config = {
     PORT: process.env.PORT,
     MONGODB_URI: process.env.MONGODB_URI,
-    HR_PORT: process.env.HR_PORT
+    HR_PORT: process.env.HR_PORT,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY
 };
 __exportStar(require("./index"), exports);

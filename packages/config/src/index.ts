@@ -8,6 +8,7 @@ dotenv.config({
  export  const config = {
   PORT: process.env.PORT,
   MONGODB_URI: process.env.MONGODB_URI,
-  HR_PORT:process.env.HR_PORT
+  HR_PORT:process.env.HR_PORT,
+  OPENAI_API_KEY:process.env.OPENAI_API_KEY
 };
 export * from "./index";
