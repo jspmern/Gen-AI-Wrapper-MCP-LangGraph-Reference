@@ -12,11 +12,10 @@
     "build:gateway": "npm run build -w @company/gateway",
     "build:hr": "npm run build -w @company/hr-mcp-server",
 
-    "start:gateway": "npm run start -w @company/gateway",
-    "start:hr": "npm run start -w @company/hr-mcp-server",
 
-    "dev:gateway": "npm run dev -w @company/gateway",
-    "dev:hr": "npm run dev -w @company/hr-mcp-server"
+    "start:gateway": "npm run start -w @company/gateway",
+    "start:hr": "npm run start -w @company/hr-mcp-server"
+
   },
   "author": "utsav_kumar_jha",
   "license": "ISC",

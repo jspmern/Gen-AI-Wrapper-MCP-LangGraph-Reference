@@ -20,4 +20,7 @@ const EmployeeSchema: Schema = new Schema({
   leave:{type:Number, required:true}
 });
 
-export default mongoose.model<IEmployee>('Employee', EmployeeSchema);
+export const Employee = mongoose.model<IEmployee>(
+  "Employee",
+  EmployeeSchema
+);
