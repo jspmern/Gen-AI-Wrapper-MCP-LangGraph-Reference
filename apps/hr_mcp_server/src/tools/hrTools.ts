@@ -1,5 +1,6 @@
 import { Employee} from "@company/database"
 import { z } from "zod";
+import { createEmpController, getByIdController } from "../controller/employeeController";
 export const hrToolHandler = (server:any): void => {
     /** this is the tool for getting employee information by id */
     server.registerTool(
@@ -13,8 +14,8 @@ export const hrToolHandler = (server:any): void => {
             },
         },
         async ({ id }:{id:string}) => {
-            const findData: unknown = await Employee.findById(id);
-            const finalResult = JSON.stringify(findData);
+            const  result = await getByIdController(id)
+            const finalResult = JSON.stringify(result);
             return {
                 content: [
                     {
@@ -30,21 +31,41 @@ export const hrToolHandler = (server:any): void => {
      server.registerTool(
         "create_employee",
         {
-            description: "this is the tool for getting specific employee details",
+            description: "this is the tools for creating employee",
             inputSchema: {
                 id: z.string().describe(
-                    "This is the id for getting the information of specific user"
+                    "Unique id for new employee"
+                ),
+                   fristName: z.string().describe(
+                    "first name of employee"
+                ),
+                    lastName: z.string().describe(
+                    "last name of employee"
+                ),email: z.string().describe(
+                    "unique email fo employee"
+                ),
+                    position: z.string().describe(
+                    "position of employee i.e : manger , developer , team lead"
+                ).optional(),
+                    hireAt: z.string().describe(
+                    "whiched date employee hired"
+                ),
+                    salary: z.number().describe(
+                    "salray of employee per month "
+                ),
+                    leave: z.number().describe(
+                    "credited leave numbers of employee"
                 ),
             },
         },
-        async ({ id }:{id:string}) => {
-            const findData: unknown = await Employee.findById(id);
-            const finalResult = JSON.stringify(findData);
+        async ({ id,firstName,lastName,email,position="unknown", hireAt, salary,leave }:any) => {
+               const result= await createEmpController({ id,firstName,lastName,email,position, hireAt, salary,leave })
+               const newUser=JSON.stringify(result)
             return {
                 content: [
                     {
                         type: "text",
-                        text: finalResult,
+                        text: ` ${newUser} is created successfully `,
                     },
                 ],
             };
