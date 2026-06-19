@@ -1,5 +1,4 @@
- 
- 
+
 import { MultiServerMCPClient } from "@langchain/mcp-adapters";
 
 export async function getHrMcpTools() {

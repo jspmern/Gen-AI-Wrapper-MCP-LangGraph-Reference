@@ -1,8 +1,8 @@
 import { END, MemorySaver, START, StateGraph } from "@langchain/langgraph";
-import { ToolNode, toolsCondition } from "@langchain/langgraph/prebuilt";
+import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { ChatOpenAI } from "@langchain/openai";
-import { AIMessage, SystemMessage } from "@langchain/core/messages";
-
+import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
+import readline from "readline/promises";
 import { MessagesState } from "./state";
 import { config } from "@company/config";
 import { getHrMcpTools } from "../mcp/hrMcpClient";
@@ -31,16 +31,16 @@ export async function createGraph() {
     };
   }
 
-async function whereShouldGo(state: typeof MessagesState.State) {
-  const lastMessage = state.messages[state.messages.length - 1] as AIMessage;
+  async function whereShouldGo(state: typeof MessagesState.State) {
+    const lastMessage = state.messages[state.messages.length - 1] as AIMessage;
 
-  const toolCalls = (lastMessage as any).tool_calls;
-  if (Array.isArray(toolCalls) && toolCalls.length > 0) {
-    return "tools";
+    const toolCalls = (lastMessage as any).tool_calls;
+    if (Array.isArray(toolCalls) && toolCalls.length > 0) {
+      return "tools";
+    }
+
+    return END;
   }
-
-  return END;
-}
 
   const toolNode = new ToolNode(hrTools);
 
@@ -50,7 +50,7 @@ async function whereShouldGo(state: typeof MessagesState.State) {
     .addEdge(START, "llmCall")
     .addConditionalEdges("llmCall", whereShouldGo, {
       tools: "tools",
-    [END]: END,
+      [END]: END,
     })
     .addEdge("tools", "llmCall")
     .compile({
@@ -61,28 +61,35 @@ async function whereShouldGo(state: typeof MessagesState.State) {
 }
 
 export async function main() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
   const agent = await createGraph();
-
-  const result = await agent.invoke(
-    {
-      messages: [
-        {
-          role: "user",
-          content: "show me  detils of 6a3263090f95b18b83163a31 this id",
-        },
-      ],
-    },
-    {
-      configurable: {
-        thread_id: "1",
-      },
+  const threadId = "hr-cli-thread-1";
+  while (true) {
+    const userInput = await rl.question("\nYou: ");
+    if (userInput === "exit") {
+      rl.close();
+      process.exit(0);
+       
     }
-  );
+    const config = {
+      configurable: {
+        thread_id: threadId,
+      },
+    };
+    const result: any = await agent.invoke(
+      {
+        messages: [new HumanMessage(userInput)],
+      },
+      config
+    );
+    console.log("**", result);
 
-  console.log("**", result);
-
-  const lastMessage = result.messages[result.messages.length - 1];
-  console.log("AI:", lastMessage.content);
+    const lastMessage = result.messages[result.messages.length - 1];
+    console.log("AI:", lastMessage.content);
+  }
+ 
 }
 
- 

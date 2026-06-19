@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createGraph = createGraph;
 exports.main = main;
@@ -6,6 +9,7 @@ const langgraph_1 = require("@langchain/langgraph");
 const prebuilt_1 = require("@langchain/langgraph/prebuilt");
 const openai_1 = require("@langchain/openai");
 const messages_1 = require("@langchain/core/messages");
+const promises_1 = __importDefault(require("readline/promises"));
 const state_1 = require("./state");
 const config_1 = require("@company/config");
 const hrMcpClient_1 = require("../mcp/hrMcpClient");
@@ -51,20 +55,28 @@ async function createGraph() {
     return graph;
 }
 async function main() {
-    const agent = await createGraph();
-    const result = await agent.invoke({
-        messages: [
-            {
-                role: "user",
-                content: "show me  detils of 6a3263090f95b18b83163a31 this id",
-            },
-        ],
-    }, {
-        configurable: {
-            thread_id: "1",
-        },
+    const rl = promises_1.default.createInterface({
+        input: process.stdin,
+        output: process.stdout,
     });
-    console.log("**", result);
-    const lastMessage = result.messages[result.messages.length - 1];
-    console.log("AI:", lastMessage.content);
+    const agent = await createGraph();
+    const threadId = "hr-cli-thread-1";
+    while (true) {
+        const userInput = await rl.question("\nYou: ");
+        if (userInput === "exit") {
+            rl.close();
+            process.exit(0);
+        }
+        const config = {
+            configurable: {
+                thread_id: threadId,
+            },
+        };
+        const result = await agent.invoke({
+            messages: [new messages_1.HumanMessage(userInput)],
+        }, config);
+        console.log("**", result);
+        const lastMessage = result.messages[result.messages.length - 1];
+        console.log("AI:", lastMessage.content);
+    }
 }
