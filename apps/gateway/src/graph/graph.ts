@@ -1,4 +1,4 @@
-import { END, MemorySaver, START, StateGraph } from "@langchain/langgraph";
+import { Command, END, MemorySaver, START, StateGraph } from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { ChatOpenAI } from "@langchain/openai";
 import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
@@ -6,6 +6,12 @@ import readline from "readline/promises";
 import { MessagesState } from "./state";
 import { config } from "@company/config";
 import { getHrMcpTools } from "../mcp/hrMcpClient";
+import { APPROVAL_REQUIRED_TOOLS } from "./approvalNode";
+import { approvalNode } from "./approvalTools";
+ 
+import { rejectedNode } from "./rejectedNode";
+import { createExecuteApprovedToolNode } from "./executeApprovedToolNode";
+ 
 
 const checkpointer = new MemorySaver();
 
@@ -31,28 +37,57 @@ export async function createGraph() {
     };
   }
 
-  async function whereShouldGo(state: typeof MessagesState.State) {
+  async function routerAfterLlmCall(state: typeof MessagesState.State) {
     const lastMessage = state.messages[state.messages.length - 1] as AIMessage;
+    console.log('lastmessage',lastMessage)
 
-    const toolCalls = (lastMessage as any).tool_calls;
-    if (Array.isArray(toolCalls) && toolCalls.length > 0) {
-      return "tools";
-    }
-
-    return END;
+    const toolCalls = (lastMessage as any).tool_calls ?? []
+     if(!toolCalls.length) {return  END}
+     const toolName = toolCalls[0].name;
+     if(APPROVAL_REQUIRED_TOOLS.includes(toolName))
+     {
+      return "approval"
+     }
+     return "tools"
+    
   }
+  
 
+  async function routerAfterApproval(state: typeof MessagesState.State){
+    console.log("hello i  am router after apporval",state) 
+    const approve =state.approvalDecision?.decision==="approved"
+    if(approve)
+    {
+       return "executeApprovedTool";
+    }
+      return "reject"
+     
+  }
   const toolNode = new ToolNode(hrTools);
-
+  const executeApprovedToolNode =
+    createExecuteApprovedToolNode(hrTools);
+ 
   const graph = new StateGraph(MessagesState)
     .addNode("llmCall", llmCall)
     .addNode("tools", toolNode)
+     .addNode("approval",approvalNode)
+     .addNode("executeApprovedTool",executeApprovedToolNode)
+     .addNode('reject',rejectedNode)
     .addEdge(START, "llmCall")
-    .addConditionalEdges("llmCall", whereShouldGo, {
+    
+    .addConditionalEdges("llmCall", routerAfterLlmCall, {
       tools: "tools",
-      [END]: END,
+     [END]: END,
+      approval:"approval"
     })
+     .addConditionalEdges("approval", routerAfterApproval, {
+      executeApprovedTool: "executeApprovedTool",
+      reject: "reject"
+    })
+    
     .addEdge("tools", "llmCall")
+      .addEdge("executeApprovedTool", "llmCall")
+    .addEdge("reject", "llmCall")
     .compile({
       checkpointer,
     });
@@ -85,8 +120,46 @@ export async function main() {
       },
       config
     );
-    console.log("**", result);
+    console.log("**", JSON.stringify(result.__interrupt__));
+    
+    const interruptData = result.__interrupt__;
 
+    if (interruptData?.length) {
+      const approvalPayload = interruptData[0].value;
+
+      console.log("\nHuman approval required:");
+      console.log("Tool:", approvalPayload.toolName);
+      console.log("Arguments:", approvalPayload.args);
+
+      const answer = await rl.question(
+        "\nApprove this action? yes/no: "
+      );
+
+      const resumeValue =
+        answer.toLowerCase() === "yes"
+          ? {
+              decision: "approved",
+              approvedBy: "utsav-cli",
+            }
+          : {
+              decision: "rejected",
+              rejectedBy: "utsav-cli",
+              reason: "Rejected from CLI",
+            };
+
+      const resumedResult: any = await agent.invoke(
+        new Command({
+          resume: resumeValue,
+        }),
+        config
+      );
+
+      const lastMessage =
+        resumedResult.messages[resumedResult.messages.length - 1];
+
+      console.log("\nAI:", lastMessage.content);
+      continue;
+    }
     const lastMessage = result.messages[result.messages.length - 1];
     console.log("AI:", lastMessage.content);
   }

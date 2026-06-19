@@ -1,0 +1,1 @@
+export const APPROVAL_REQUIRED_TOOLS=["create_employee","delete_employee"]
