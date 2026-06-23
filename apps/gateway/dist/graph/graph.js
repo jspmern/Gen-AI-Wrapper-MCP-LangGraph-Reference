@@ -17,6 +17,8 @@ const approvalNode_1 = require("./approvalNode");
 const approvalTools_1 = require("./approvalTools");
 const rejectedNode_1 = require("./rejectedNode");
 const executeApprovedToolNode_1 = require("./executeApprovedToolNode");
+const inputGuardrail_1 = require("./guardrails/inputGuardrail");
+const toolGuardrail_1 = require("./guardrails/toolGuardrail");
 const checkpointer = new langgraph_1.MemorySaver();
 async function createGraph() {
     const hrTools = await (0, hrMcpClient_1.getHrMcpTools)();
@@ -35,9 +37,26 @@ async function createGraph() {
             messages: [response],
         };
     }
+    async function routerAfterInputGuardrail(state) {
+        if (state.guardrailBlocked) {
+            return langgraph_1.END;
+        }
+        return "llmCall";
+    }
     async function routerAfterLlmCall(state) {
         const lastMessage = state.messages[state.messages.length - 1];
         console.log('lastmessage', lastMessage);
+        const toolCalls = lastMessage.tool_calls ?? [];
+        if (!toolCalls.length) {
+            return langgraph_1.END;
+        }
+        return "toolGuardrail";
+    }
+    async function routerAfterToolGuardrail(state) {
+        if (state.guardrailBlocked) {
+            return langgraph_1.END;
+        }
+        const lastMessage = state.messages[state.messages.length - 1];
         const toolCalls = lastMessage.tool_calls ?? [];
         if (!toolCalls.length) {
             return langgraph_1.END;
@@ -59,20 +78,30 @@ async function createGraph() {
     const toolNode = new prebuilt_1.ToolNode(hrTools);
     const executeApprovedToolNode = (0, executeApprovedToolNode_1.createExecuteApprovedToolNode)(hrTools);
     const graph = new langgraph_1.StateGraph(state_1.MessagesState)
+        .addNode("inputGuardrail", inputGuardrail_1.inputGuardrailNode)
         .addNode("llmCall", llmCall)
+        .addNode("toolGuardrail", toolGuardrail_1.toolGuardrailNode)
         .addNode("tools", toolNode)
         .addNode("approval", approvalTools_1.approvalNode)
         .addNode("executeApprovedTool", executeApprovedToolNode)
-        .addNode('reject', rejectedNode_1.rejectedNode)
-        .addEdge(langgraph_1.START, "llmCall")
-        .addConditionalEdges("llmCall", routerAfterLlmCall, {
-        tools: "tools",
+        .addNode("reject", rejectedNode_1.rejectedNode)
+        .addEdge(langgraph_1.START, "inputGuardrail")
+        .addConditionalEdges("inputGuardrail", routerAfterInputGuardrail, {
+        llmCall: "llmCall",
         [langgraph_1.END]: langgraph_1.END,
-        approval: "approval"
+    })
+        .addConditionalEdges("llmCall", routerAfterLlmCall, {
+        toolGuardrail: "toolGuardrail",
+        [langgraph_1.END]: langgraph_1.END,
+    })
+        .addConditionalEdges("toolGuardrail", routerAfterToolGuardrail, {
+        tools: "tools",
+        approval: "approval",
+        [langgraph_1.END]: langgraph_1.END,
     })
         .addConditionalEdges("approval", routerAfterApproval, {
         executeApprovedTool: "executeApprovedTool",
-        reject: "reject"
+        reject: "reject",
     })
         .addEdge("tools", "llmCall")
         .addEdge("executeApprovedTool", "llmCall")

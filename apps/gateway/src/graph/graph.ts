@@ -11,6 +11,8 @@ import { approvalNode } from "./approvalTools";
  
 import { rejectedNode } from "./rejectedNode";
 import { createExecuteApprovedToolNode } from "./executeApprovedToolNode";
+import { inputGuardrailNode } from "./guardrails/inputGuardrail";
+import { toolGuardrailNode } from "./guardrails/toolGuardrail";
  
 
 const checkpointer = new MemorySaver();
@@ -36,22 +38,48 @@ export async function createGraph() {
       messages: [response],
     };
   }
+   
+  async function routerAfterInputGuardrail(state : typeof MessagesState.State)
+  {
+    if (state.guardrailBlocked) {
+      return END
+    }
+    return "llmCall"
+  }
 
   async function routerAfterLlmCall(state: typeof MessagesState.State) {
     const lastMessage = state.messages[state.messages.length - 1] as AIMessage;
     console.log('lastmessage',lastMessage)
 
     const toolCalls = (lastMessage as any).tool_calls ?? []
-     if(!toolCalls.length) {return  END}
-     const toolName = toolCalls[0].name;
-     if(APPROVAL_REQUIRED_TOOLS.includes(toolName))
-     {
-      return "approval"
-     }
-     return "tools"
+   if (!toolCalls.length) {
+    return END;
+  }
+
+  return "toolGuardrail"
     
   }
-  
+
+  async function routerAfterToolGuardrail(state: typeof MessagesState.State) {
+  if ((state as any).guardrailBlocked) {
+    return END;
+  }
+
+  const lastMessage = state.messages[state.messages.length - 1] as AIMessage;
+  const toolCalls = (lastMessage as any).tool_calls ?? [];
+
+  if (!toolCalls.length) {
+    return END;
+  }
+
+  const toolName = toolCalls[0].name;
+
+  if (APPROVAL_REQUIRED_TOOLS.includes(toolName)) {
+    return "approval";
+  }
+
+  return "tools";
+}
 
   async function routerAfterApproval(state: typeof MessagesState.State){
     console.log("hello i  am router after apporval",state) 
@@ -68,29 +96,44 @@ export async function createGraph() {
     createExecuteApprovedToolNode(hrTools);
  
   const graph = new StateGraph(MessagesState)
-    .addNode("llmCall", llmCall)
-    .addNode("tools", toolNode)
-     .addNode("approval",approvalNode)
-     .addNode("executeApprovedTool",executeApprovedToolNode)
-     .addNode('reject',rejectedNode)
-    .addEdge(START, "llmCall")
-    
-    .addConditionalEdges("llmCall", routerAfterLlmCall, {
-      tools: "tools",
-     [END]: END,
-      approval:"approval"
-    })
-     .addConditionalEdges("approval", routerAfterApproval, {
-      executeApprovedTool: "executeApprovedTool",
-      reject: "reject"
-    })
-    
-    .addEdge("tools", "llmCall")
-      .addEdge("executeApprovedTool", "llmCall")
-    .addEdge("reject", "llmCall")
-    .compile({
-      checkpointer,
-    });
+  .addNode("inputGuardrail", inputGuardrailNode)
+  .addNode("llmCall", llmCall)
+  .addNode("toolGuardrail", toolGuardrailNode)
+  .addNode("tools", toolNode)
+  .addNode("approval", approvalNode)
+  .addNode("executeApprovedTool", executeApprovedToolNode)
+  .addNode("reject", rejectedNode)
+
+  .addEdge(START, "inputGuardrail")
+
+  .addConditionalEdges("inputGuardrail", routerAfterInputGuardrail, {
+    llmCall: "llmCall",
+    [END]: END,
+  })
+
+  .addConditionalEdges("llmCall", routerAfterLlmCall, {
+    toolGuardrail: "toolGuardrail",
+    [END]: END,
+  })
+
+  .addConditionalEdges("toolGuardrail", routerAfterToolGuardrail, {
+    tools: "tools",
+    approval: "approval",
+    [END]: END,
+  })
+
+  .addConditionalEdges("approval", routerAfterApproval, {
+    executeApprovedTool: "executeApprovedTool",
+    reject: "reject",
+  })
+
+  .addEdge("tools", "llmCall")
+  .addEdge("executeApprovedTool", "llmCall")
+  .addEdge("reject", "llmCall")
+
+  .compile({
+    checkpointer,
+  });
 
   return graph;
 }

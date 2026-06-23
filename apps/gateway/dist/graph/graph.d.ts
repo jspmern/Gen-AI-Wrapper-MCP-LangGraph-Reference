@@ -1,22 +1,41 @@
+import { AIMessage } from "@langchain/core/messages";
 export declare function createGraph(): Promise<import("@langchain/langgraph").CompiledStateGraph<{
+    guardrailBlocked: any;
     pendingToolCall: any;
     approvalDecision: any;
     messages: import("@langchain/core/messages").BaseMessage<import("@langchain/core/messages").MessageStructure<import("@langchain/core/messages").MessageToolSet>, import("@langchain/core/messages").MessageType>[];
 }, {
+    guardrailBlocked?: any;
     pendingToolCall?: any;
     approvalDecision?: any;
     messages?: import("@langchain/langgraph").OverwriteValue<import("@langchain/core/messages").BaseMessage<import("@langchain/core/messages").MessageStructure<import("@langchain/core/messages").MessageToolSet>, import("@langchain/core/messages").MessageType>[]> | import("@langchain/langgraph").Messages | undefined;
-}, "tools" | "approval" | "executeApprovedTool" | "reject" | "__start__" | "llmCall", {
+}, "tools" | "llmCall" | "toolGuardrail" | "approval" | "executeApprovedTool" | "reject" | "__start__" | "inputGuardrail", {
+    guardrailBlocked: import("@langchain/langgraph").BaseChannel<any, any, unknown>;
     pendingToolCall: import("@langchain/langgraph").BaseChannel<any, any, unknown>;
     approvalDecision: import("@langchain/langgraph").BaseChannel<any, any, unknown>;
     messages: import("@langchain/langgraph").BaseChannel<import("@langchain/core/messages").BaseMessage<import("@langchain/core/messages").MessageStructure<import("@langchain/core/messages").MessageToolSet>, import("@langchain/core/messages").MessageType>[], import("@langchain/langgraph").OverwriteValue<import("@langchain/core/messages").BaseMessage<import("@langchain/core/messages").MessageStructure<import("@langchain/core/messages").MessageToolSet>, import("@langchain/core/messages").MessageType>[]> | import("@langchain/langgraph").Messages, unknown>;
 }, {
+    guardrailBlocked: import("@langchain/langgraph").BaseChannel<any, any, unknown>;
     pendingToolCall: import("@langchain/langgraph").BaseChannel<any, any, unknown>;
     approvalDecision: import("@langchain/langgraph").BaseChannel<any, any, unknown>;
     messages: import("@langchain/langgraph").BaseChannel<import("@langchain/core/messages").BaseMessage<import("@langchain/core/messages").MessageStructure<import("@langchain/core/messages").MessageToolSet>, import("@langchain/core/messages").MessageType>[], import("@langchain/langgraph").OverwriteValue<import("@langchain/core/messages").BaseMessage<import("@langchain/core/messages").MessageStructure<import("@langchain/core/messages").MessageToolSet>, import("@langchain/core/messages").MessageType>[]> | import("@langchain/langgraph").Messages, unknown>;
 }, import("@langchain/langgraph").StateDefinition, {
+    inputGuardrail: {
+        messages: AIMessage<import("@langchain/core/messages").MessageStructure<import("@langchain/core/messages").MessageToolSet>>[];
+        guardrailBlocked: boolean;
+    } | {
+        guardrailBlocked: boolean;
+        messages?: undefined;
+    };
     llmCall: {
         messages: import("@langchain/core/messages").AIMessageChunk<import("@langchain/core/messages").MessageStructure<import("@langchain/core/messages").MessageToolSet>>[];
+    };
+    toolGuardrail: {
+        guardrailBlocked: boolean;
+        messages?: undefined;
+    } | {
+        guardrailBlocked: boolean;
+        messages: AIMessage<import("@langchain/core/messages").MessageStructure<import("@langchain/core/messages").MessageToolSet>>[];
     };
     tools: any;
     approval: {
