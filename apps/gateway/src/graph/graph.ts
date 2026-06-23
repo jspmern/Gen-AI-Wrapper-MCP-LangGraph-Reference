@@ -13,6 +13,7 @@ import { rejectedNode } from "./rejectedNode";
 import { createExecuteApprovedToolNode } from "./executeApprovedToolNode";
 import { inputGuardrailNode } from "./guardrails/inputGuardrail";
 import { toolGuardrailNode } from "./guardrails/toolGuardrail";
+import { outputPIIGuardrailNode } from "./guardrails/outputGuardrail";
  
 
 const checkpointer = new MemorySaver();
@@ -53,7 +54,7 @@ export async function createGraph() {
 
     const toolCalls = (lastMessage as any).tool_calls ?? []
    if (!toolCalls.length) {
-    return END;
+    return "outputPIIGuardrail";
   }
 
   return "toolGuardrail"
@@ -103,6 +104,7 @@ export async function createGraph() {
   .addNode("approval", approvalNode)
   .addNode("executeApprovedTool", executeApprovedToolNode)
   .addNode("reject", rejectedNode)
+    .addNode("outputPIIGuardrail", outputPIIGuardrailNode)
 
   .addEdge(START, "inputGuardrail")
 
@@ -113,7 +115,7 @@ export async function createGraph() {
 
   .addConditionalEdges("llmCall", routerAfterLlmCall, {
     toolGuardrail: "toolGuardrail",
-    [END]: END,
+   outputPIIGuardrail: "outputPIIGuardrail"
   })
 
   .addConditionalEdges("toolGuardrail", routerAfterToolGuardrail, {
@@ -130,7 +132,7 @@ export async function createGraph() {
   .addEdge("tools", "llmCall")
   .addEdge("executeApprovedTool", "llmCall")
   .addEdge("reject", "llmCall")
-
+   .addEdge("outputPIIGuardrail", END)
   .compile({
     checkpointer,
   });
