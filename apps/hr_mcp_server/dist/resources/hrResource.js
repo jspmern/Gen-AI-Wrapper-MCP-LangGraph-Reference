@@ -8,6 +8,7 @@ function registerHrResources(server) {
         description: "Returns all employee records"
     }, async (uri) => {
         const employees = await database_1.Employee.find({}).lean();
+        console.log("hello i am employee", employees);
         return {
             contents: [
                 {

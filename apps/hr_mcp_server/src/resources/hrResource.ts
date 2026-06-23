@@ -13,6 +13,7 @@ export function registerHrResources(
     },
     async (uri) => {
         const employees = await Employee.find({}).lean()
+        console.log("hello i am employee",employees)
         
       return {
         contents: [
