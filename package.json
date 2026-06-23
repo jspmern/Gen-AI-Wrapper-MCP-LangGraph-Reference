@@ -7,15 +7,13 @@
     "packages/*"
   ],
   "scripts": {
-  "build": "npm run build --workspaces",
-
+    "build": "npm run build --workspaces",
     "build:gateway": "npm run build -w @company/gateway",
     "build:hr": "npm run build -w @company/hr-mcp-server",
-
-
+    "build:leave": "npm run build -w @company/leave_mcp_server",
     "start:gateway": "npm run start -w @company/gateway",
-    "start:hr": "npm run start -w @company/hr-mcp-server"
-
+    "start:hr": "npm run start -w @company/hr-mcp-server",
+    "start:leave": "npm start -w @company/leave_mcp_server"
   },
   "author": "utsav_kumar_jha",
   "license": "ISC",
