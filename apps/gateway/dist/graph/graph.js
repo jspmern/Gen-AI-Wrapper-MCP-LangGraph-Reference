@@ -19,6 +19,7 @@ const rejectedNode_1 = require("./rejectedNode");
 const executeApprovedToolNode_1 = require("./executeApprovedToolNode");
 const inputGuardrail_1 = require("./guardrails/inputGuardrail");
 const toolGuardrail_1 = require("./guardrails/toolGuardrail");
+const outputGuardrail_1 = require("./guardrails/outputGuardrail");
 const checkpointer = new langgraph_1.MemorySaver();
 async function createGraph() {
     const hrTools = await (0, hrMcpClient_1.getHrMcpTools)();
@@ -48,7 +49,7 @@ async function createGraph() {
         console.log('lastmessage', lastMessage);
         const toolCalls = lastMessage.tool_calls ?? [];
         if (!toolCalls.length) {
-            return langgraph_1.END;
+            return "outputPIIGuardrail";
         }
         return "toolGuardrail";
     }
@@ -85,6 +86,7 @@ async function createGraph() {
         .addNode("approval", approvalTools_1.approvalNode)
         .addNode("executeApprovedTool", executeApprovedToolNode)
         .addNode("reject", rejectedNode_1.rejectedNode)
+        .addNode("outputPIIGuardrail", outputGuardrail_1.outputPIIGuardrailNode)
         .addEdge(langgraph_1.START, "inputGuardrail")
         .addConditionalEdges("inputGuardrail", routerAfterInputGuardrail, {
         llmCall: "llmCall",
@@ -92,7 +94,7 @@ async function createGraph() {
     })
         .addConditionalEdges("llmCall", routerAfterLlmCall, {
         toolGuardrail: "toolGuardrail",
-        [langgraph_1.END]: langgraph_1.END,
+        outputPIIGuardrail: "outputPIIGuardrail"
     })
         .addConditionalEdges("toolGuardrail", routerAfterToolGuardrail, {
         tools: "tools",
@@ -106,6 +108,7 @@ async function createGraph() {
         .addEdge("tools", "llmCall")
         .addEdge("executeApprovedTool", "llmCall")
         .addEdge("reject", "llmCall")
+        .addEdge("outputPIIGuardrail", langgraph_1.END)
         .compile({
         checkpointer,
     });

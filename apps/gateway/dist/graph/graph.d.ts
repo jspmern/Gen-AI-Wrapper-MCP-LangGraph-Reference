@@ -9,7 +9,7 @@ export declare function createGraph(): Promise<import("@langchain/langgraph").Co
     pendingToolCall?: any;
     approvalDecision?: any;
     messages?: import("@langchain/langgraph").OverwriteValue<import("@langchain/core/messages").BaseMessage<import("@langchain/core/messages").MessageStructure<import("@langchain/core/messages").MessageToolSet>, import("@langchain/core/messages").MessageType>[]> | import("@langchain/langgraph").Messages | undefined;
-}, "tools" | "llmCall" | "toolGuardrail" | "approval" | "executeApprovedTool" | "reject" | "__start__" | "inputGuardrail", {
+}, "tools" | "llmCall" | "outputPIIGuardrail" | "toolGuardrail" | "approval" | "executeApprovedTool" | "reject" | "__start__" | "inputGuardrail", {
     guardrailBlocked: import("@langchain/langgraph").BaseChannel<any, any, unknown>;
     pendingToolCall: import("@langchain/langgraph").BaseChannel<any, any, unknown>;
     approvalDecision: import("@langchain/langgraph").BaseChannel<any, any, unknown>;
@@ -66,6 +66,9 @@ export declare function createGraph(): Promise<import("@langchain/langgraph").Co
         messages: import("@langchain/core/messages").ToolMessage<import("@langchain/core/messages").MessageStructure<import("@langchain/core/messages").MessageToolSet>>[];
         pendingToolCall: null;
         approvalDecision: null;
+    };
+    outputPIIGuardrail: {
+        messages: AIMessage<import("@langchain/core/messages").MessageStructure<import("@langchain/core/messages").MessageToolSet>>[];
     };
 }, unknown, unknown, []>>;
 export declare function main(): Promise<void>;
