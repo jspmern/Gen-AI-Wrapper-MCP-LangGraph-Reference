@@ -5,7 +5,7 @@ import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages
 import readline from "readline/promises";
 import { MessagesState } from "./state";
 import { config } from "@company/config";
-import { getHrMcpTools } from "../mcp/hrMcpClient";
+import { getMcpTools } from "../mcp/hrMcpClient";
 import { APPROVAL_REQUIRED_TOOLS } from "./approvalNode";
 import { approvalNode } from "./approvalTools";
  
@@ -19,13 +19,13 @@ import { outputPIIGuardrailNode } from "./guardrails/outputGuardrail";
 const checkpointer = new MemorySaver();
 
 export async function createGraph() {
-  const hrTools = await getHrMcpTools();
+  const mcpTools = await getMcpTools();
 
   const llm = new ChatOpenAI({
     model: "gpt-4.1-mini",
     temperature: 0,
     apiKey: config.OPENAI_API_KEY,
-  }).bindTools(hrTools);
+  }).bindTools(mcpTools);
 
   async function llmCall(state: typeof MessagesState.State) {
     console.log("messages:", state.messages);
@@ -92,9 +92,9 @@ export async function createGraph() {
       return "reject"
      
   }
-  const toolNode = new ToolNode(hrTools);
+  const toolNode = new ToolNode(mcpTools);
   const executeApprovedToolNode =
-    createExecuteApprovedToolNode(hrTools);
+    createExecuteApprovedToolNode(mcpTools);
  
   const graph = new StateGraph(MessagesState)
   .addNode("inputGuardrail", inputGuardrailNode)

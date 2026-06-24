@@ -8,6 +8,10 @@ async function getHrMcpTools() {
             transport: "http",
             url: "http://localhost:4201/mcp",
         },
+        leave: {
+            transport: "http",
+            url: "http://localhost:4202/mcp"
+        }
     });
     const tools = await client.getTools();
     return tools;

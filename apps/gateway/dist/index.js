@@ -8,12 +8,15 @@ const express_1 = __importDefault(require("express"));
 const app = (0, express_1.default)();
 const config_1 = require("@company/config");
 const graph_1 = require("./graph/graph");
+const hrMcpClient_1 = require("./mcp/hrMcpClient");
 /** this is the route place  */
 app.get("/health", (req, res) => {
     res.send({ res: "okay ✅" });
 });
 /**this is the listing the app */
 app.listen(config_1.config.PORT, async () => {
+    const result = await (0, hrMcpClient_1.getHrMcpTools)();
+    console.log(result);
     await (0, database_1.connectDatabase)();
     console.log(`server is connect at http://localhost:${config_1.config.PORT}`);
     (0, graph_1.main)();
