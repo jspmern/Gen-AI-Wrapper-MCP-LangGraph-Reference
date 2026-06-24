@@ -4,5 +4,8 @@ export declare const config: {
     HR_PORT: string | undefined;
     OPENAI_API_KEY: string | undefined;
     LEAVE_PORT: string | undefined;
+    USER_EMAIL: string | undefined;
+    JWT_SECRET: string | undefined;
+    JWT_EXPIRE_IN: string | undefined;
 };
 export * from "./index";
