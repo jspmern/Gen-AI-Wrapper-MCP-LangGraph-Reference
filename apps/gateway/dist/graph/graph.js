@@ -22,12 +22,12 @@ const toolGuardrail_1 = require("./guardrails/toolGuardrail");
 const outputGuardrail_1 = require("./guardrails/outputGuardrail");
 const checkpointer = new langgraph_1.MemorySaver();
 async function createGraph() {
-    const hrTools = await (0, hrMcpClient_1.getHrMcpTools)();
+    const mcpTools = await (0, hrMcpClient_1.getMcpTools)();
     const llm = new openai_1.ChatOpenAI({
         model: "gpt-4.1-mini",
         temperature: 0,
         apiKey: config_1.config.OPENAI_API_KEY,
-    }).bindTools(hrTools);
+    }).bindTools(mcpTools);
     async function llmCall(state) {
         console.log("messages:", state.messages);
         const response = await llm.invoke([
@@ -76,8 +76,8 @@ async function createGraph() {
         }
         return "reject";
     }
-    const toolNode = new prebuilt_1.ToolNode(hrTools);
-    const executeApprovedToolNode = (0, executeApprovedToolNode_1.createExecuteApprovedToolNode)(hrTools);
+    const toolNode = new prebuilt_1.ToolNode(mcpTools);
+    const executeApprovedToolNode = (0, executeApprovedToolNode_1.createExecuteApprovedToolNode)(mcpTools);
     const graph = new langgraph_1.StateGraph(state_1.MessagesState)
         .addNode("inputGuardrail", inputGuardrail_1.inputGuardrailNode)
         .addNode("llmCall", llmCall)

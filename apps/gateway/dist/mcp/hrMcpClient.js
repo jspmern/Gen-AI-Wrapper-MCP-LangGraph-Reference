@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getHrMcpTools = getHrMcpTools;
+exports.getMcpTools = getMcpTools;
 const mcp_adapters_1 = require("@langchain/mcp-adapters");
-async function getHrMcpTools() {
+async function getMcpTools() {
     const client = new mcp_adapters_1.MultiServerMCPClient({
         hr: {
             transport: "http",
