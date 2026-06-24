@@ -31,6 +31,7 @@ exports.config = {
     LEAVE_PORT: process.env.LEAVE_PORT,
     USER_EMAIL: process.env.USER_EMAIL,
     JWT_SECRET: process.env.JWT_SECRET,
-    JWT_EXPIRE_IN: process.env.JWT_EXPIRE_IN
+    JWT_EXPIRE_IN: process.env.JWT_EXPIRE_IN,
+    JWT_TOKEN: process.env.JWT_TOKEN
 };
 __exportStar(require("./index"), exports);

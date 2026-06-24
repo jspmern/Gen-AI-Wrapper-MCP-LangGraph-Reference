@@ -7,5 +7,6 @@ export declare const config: {
     USER_EMAIL: string | undefined;
     JWT_SECRET: string | undefined;
     JWT_EXPIRE_IN: string | undefined;
+    JWT_TOKEN: string | undefined;
 };
 export * from "./index";

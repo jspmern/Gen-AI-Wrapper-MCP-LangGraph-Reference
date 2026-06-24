@@ -2,10 +2,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { hrToolHandler } from "./tools/hrTools.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import express from 'express'
+import express, { Request, Response } from 'express'
 import { config } from "@company/config";
 import { connectDatabase } from "@company/database";
 import { registerHrResources } from "./resources/hrResource.js";
+import { authMiddleware } from "@company/auth";
 
 /** create server  */
 function createServer() {
@@ -24,8 +25,9 @@ app.use(express.json())
 const PORT=config.HR_PORT
 
 app.post(
-    "/mcp",
-    async (req, res) => {
+    "/mcp", authMiddleware,
+    async (req: Request & { user?: unknown }, res: Response) => {
+        console.log('req.user', req.user)
 
         try {
             const transport =

@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const config_1 = require("@company/config");
+const auth_1 = require("@company/auth");
 const database_1 = require("@company/database");
 const express_1 = __importDefault(require("express"));
 const mcp_js_1 = require("@modelcontextprotocol/sdk/server/mcp.js");
@@ -24,7 +25,8 @@ function createServer() {
 app.get("/", (req, res) => {
     res.send({ message: `leave_mcp_server is up at ${PORT}` });
 });
-app.post("/mcp", async (req, res) => {
+app.post("/mcp", auth_1.authMiddleware, async (req, res) => {
+    console.log('leave mcp', req.user);
     try {
         const transport = new streamableHttp_js_1.StreamableHTTPServerTransport({
             sessionIdGenerator: undefined,

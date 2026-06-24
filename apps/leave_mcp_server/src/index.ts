@@ -1,6 +1,7 @@
 import { config } from "@company/config"
+import {authMiddleware} from '@company/auth'
 import { connectDatabase } from "@company/database"
-import express from 'express'
+import express, { Request } from 'express'
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
@@ -28,9 +29,9 @@ app.get("/", (req, res) => {
 })
 
 app.post(
-    "/mcp",
-    async (req, res) => {
-
+    "/mcp",authMiddleware,
+    async (req: Request & { user?: any }, res) => {
+       console.log('leave mcp',req.user)
         try {
             const transport =
                 new StreamableHTTPServerTransport({

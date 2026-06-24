@@ -10,6 +10,7 @@ const express_1 = __importDefault(require("express"));
 const config_1 = require("@company/config");
 const database_1 = require("@company/database");
 const hrResource_js_1 = require("./resources/hrResource.js");
+const auth_1 = require("@company/auth");
 /** create server  */
 function createServer() {
     const server = new mcp_js_1.McpServer({
@@ -25,7 +26,8 @@ function createServer() {
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 const PORT = config_1.config.HR_PORT;
-app.post("/mcp", async (req, res) => {
+app.post("/mcp", auth_1.authMiddleware, async (req, res) => {
+    console.log('req.user', req.user);
     try {
         const transport = new streamableHttp_js_1.StreamableHTTPServerTransport({
             sessionIdGenerator: undefined,
