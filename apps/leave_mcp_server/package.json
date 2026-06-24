@@ -17,6 +17,9 @@
     "express": "^5.2.1",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+     "@company/config":"*",
+     "@company/database":"*",
+     "@company/logger":"*"
   }
 }

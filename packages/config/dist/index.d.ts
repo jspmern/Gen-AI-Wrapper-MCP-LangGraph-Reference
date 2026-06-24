@@ -3,5 +3,6 @@ export declare const config: {
     MONGODB_URI: string | undefined;
     HR_PORT: string | undefined;
     OPENAI_API_KEY: string | undefined;
+    LEAVE_PORT: string | undefined;
 };
 export * from "./index";

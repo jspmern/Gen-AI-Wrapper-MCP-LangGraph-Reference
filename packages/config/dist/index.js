@@ -27,6 +27,7 @@ exports.config = {
     PORT: process.env.PORT,
     MONGODB_URI: process.env.MONGODB_URI,
     HR_PORT: process.env.HR_PORT,
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    LEAVE_PORT: process.env.LEAVE_PORT
 };
 __exportStar(require("./index"), exports);
