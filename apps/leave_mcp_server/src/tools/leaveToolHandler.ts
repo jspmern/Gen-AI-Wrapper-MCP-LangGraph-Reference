@@ -1,8 +1,10 @@
+import { checkPermission, getCurrentUser } from "@company/auth";
 import { Employee } from "@company/database";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import z from "zod";
 
 export function leaveHrToolRegister(server: McpServer) {
+  /** get information about user leave */
   server.registerTool(
     "get_user_leave_info",
     {
@@ -13,6 +15,8 @@ export function leaveHrToolRegister(server: McpServer) {
       },
     },
     async ({ id }) => {
+       const user=   getCurrentUser()
+                checkPermission("get_user_leave_info", user.role)
       const findUser = await Employee.findById(id);
       let str = ``;
       findUser
@@ -28,6 +32,9 @@ export function leaveHrToolRegister(server: McpServer) {
       };
     },
   );
+
+
+  /** apply user leave  */
  server.registerTool(
   "get_apply_leave_for_user",
   {
@@ -42,6 +49,8 @@ export function leaveHrToolRegister(server: McpServer) {
     },
   },
   async ({ id, leave }) => {
+     const user=   getCurrentUser()
+                checkPermission("get_apply_leave_for_user", user.role)
     const employee = await Employee.findById(id);
     console.log(employee)
 

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.hrToolHandler = void 0;
 const zod_1 = require("zod");
 const employeeController_1 = require("../controller/employeeController");
+const auth_1 = require("@company/auth");
 const hrToolHandler = (server) => {
     /** this is the tool for getting employee information by id */
     server.registerTool("get_employee", {
@@ -11,6 +12,8 @@ const hrToolHandler = (server) => {
             id: zod_1.z.string().describe("This is the id for getting the information of specific user"),
         },
     }, async ({ id }) => {
+        const user = (0, auth_1.getCurrentUser)();
+        (0, auth_1.checkPermission)("get_employee", user.role);
         const result = await (0, employeeController_1.getByIdController)(id);
         const finalResult = JSON.stringify(result);
         return {
@@ -35,6 +38,8 @@ const hrToolHandler = (server) => {
             leave: zod_1.z.number().describe("credited leave numbers of employee"),
         },
     }, async ({ id, firstName, lastName, email, position = "unknown", hireAt, salary, leave }) => {
+        const user = (0, auth_1.getCurrentUser)();
+        (0, auth_1.checkPermission)("create_employee", user.role);
         const result = await (0, employeeController_1.createEmpController)({ id, firstName, lastName, email, position, hireAt, salary, leave });
         const newUser = JSON.stringify(result);
         return {
@@ -54,6 +59,8 @@ const hrToolHandler = (server) => {
             id: zod_1.z.string().describe("This is the id for deleting user information"),
         },
     }, async ({ id }) => {
+        const user = (0, auth_1.getCurrentUser)();
+        (0, auth_1.checkPermission)("delete_employee", user.role);
         const result = await (0, employeeController_1.deleteByIdController)(id);
         const finalResult = JSON.stringify(result);
         return {

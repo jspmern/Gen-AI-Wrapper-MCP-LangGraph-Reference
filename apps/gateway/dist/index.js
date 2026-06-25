@@ -19,7 +19,10 @@ app.get('/auth/login', async (req, res) => {
     const user = await database_1.Employee.findOne({ email });
     if (!user)
         return res.status(404).send({ msg: "User not found, please create user" });
-    const payload = { email: user.email, role: user.position };
+    const payload = {
+        email: user.email,
+        role: user.position,
+    };
     const token = await (0, auth_1.generateJwtToken)(payload);
     res.send({ token });
 });

@@ -1,6 +1,7 @@
  
 import { z } from "zod";
 import { createEmpController, deleteByIdController, getByIdController } from "../controller/employeeController";
+import { checkPermission, getCurrentUser } from "@company/auth";
 export const hrToolHandler = (server:any): void => {
     /** this is the tool for getting employee information by id */
     server.registerTool(
@@ -14,6 +15,8 @@ export const hrToolHandler = (server:any): void => {
             },
         },
         async ({ id }:{id:string}) => {
+             const user=   getCurrentUser()
+                checkPermission("get_employee", user.role)
             const  result = await getByIdController(id)
             const finalResult = JSON.stringify(result);
             return {
@@ -59,6 +62,8 @@ export const hrToolHandler = (server:any): void => {
             },
         },
         async ({ id,firstName,lastName,email,position="unknown", hireAt, salary,leave }:any) => {
+               const user=   getCurrentUser()
+                checkPermission("create_employee", user.role)
                const result= await createEmpController({ id,firstName,lastName,email,position, hireAt, salary,leave })
                const newUser=JSON.stringify(result)
             return {
@@ -85,6 +90,8 @@ export const hrToolHandler = (server:any): void => {
             },
         },
         async ({ id }:{id:string}) => {
+             const user=   getCurrentUser()
+                checkPermission("delete_employee", user.role)
             const  result = await  deleteByIdController(id)
             const finalResult = JSON.stringify(result);
             return {

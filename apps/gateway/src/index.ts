@@ -3,7 +3,7 @@ import express from 'express'
 const app= express();
 import  {config} from "@company/config";
 import { main } from './graph/graph';
-import { generateJwtToken } from '@company/auth';
+import { generateJwtToken, type UserRole } from '@company/auth';
  
 app.use(express.json());
 
@@ -16,7 +16,10 @@ app.get('/auth/login',async(req,res)=>{
    const email=config.USER_EMAIL
    const user = await Employee.findOne({ email })
    if (!user) return res.status(404).send({ msg: "User not found, please create user" })
-   const payload = { email: user.email as string, role: user.position as string }
+   const payload: { email: string; role: UserRole } = {
+     email: user.email as string,
+     role: user.position as UserRole,
+   }
    const token = await generateJwtToken(payload)
     res.send({ token })
 })
