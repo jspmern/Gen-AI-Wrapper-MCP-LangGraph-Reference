@@ -20,8 +20,9 @@ const executeApprovedToolNode_1 = require("./executeApprovedToolNode");
 const inputGuardrail_1 = require("./guardrails/inputGuardrail");
 const toolGuardrail_1 = require("./guardrails/toolGuardrail");
 const outputGuardrail_1 = require("./guardrails/outputGuardrail");
-const checkpointer = new langgraph_1.MemorySaver();
+const mongoCheckpointer_1 = require("./mongoCheckpointer");
 async function createGraph() {
+    const checkpointer = await (0, mongoCheckpointer_1.createMongoCheckpointer)();
     const mcpTools = await (0, hrMcpClient_1.getMcpTools)();
     const llm = new openai_1.ChatOpenAI({
         model: "gpt-4.1-mini",
@@ -120,7 +121,7 @@ async function main() {
         output: process.stdout,
     });
     const agent = await createGraph();
-    const threadId = "hr-cli-thread-1";
+    const threadId = "utsav-cli-thread-1";
     while (true) {
         const userInput = await rl.question("\nYou: ");
         if (userInput === "exit") {

@@ -14,11 +14,13 @@ import { createExecuteApprovedToolNode } from "./executeApprovedToolNode";
 import { inputGuardrailNode } from "./guardrails/inputGuardrail";
 import { toolGuardrailNode } from "./guardrails/toolGuardrail";
 import { outputPIIGuardrailNode } from "./guardrails/outputGuardrail";
+import { createMongoCheckpointer } from "./mongoCheckpointer";
  
 
-const checkpointer = new MemorySaver();
+ 
 
 export async function createGraph() {
+  const checkpointer = await createMongoCheckpointer()
   const mcpTools = await getMcpTools();
 
   const llm = new ChatOpenAI({
@@ -146,7 +148,7 @@ export async function main() {
     output: process.stdout,
   });
   const agent = await createGraph();
-  const threadId = "hr-cli-thread-1";
+  const threadId = "utsav-cli-thread-1";
   while (true) {
     const userInput = await rl.question("\nYou: ");
     if (userInput === "exit") {
