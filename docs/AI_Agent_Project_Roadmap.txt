@@ -1,0 +1,76 @@
+AI Agent Project Roadmap (Step-by-Step)
+
+Goal: Build a working AI Agent first, then gradually make it
+production-ready.
+
+STEP 1: Finish Backend - Complete Gateway - Complete LangGraph flow -
+Complete MCP communication - Test everything through CLI
+
+STEP 2: Create Dummy APIs - POST /api/chat - GET /api/chat/history - GET
+/api/approval/pending - POST /api/approval - GET /api/profile
+
+Purpose: Frontend should not wait for backend completion.
+
+STEP 3: Build Frontend - Login - Chat - Conversation History - Approval
+Screen - Employee Details - Leave Details - Profile
+
+STEP 4: Replace Dummy APIs Dummy APIs ↓ LangGraph ↓ MCP Tools ↓ MongoDB
+
+Keep the response format the same.
+
+STEP 5: Thread & Session Every conversation should have: - userId -
+sessionId - threadId
+
+Same threadId = Continue conversation Different threadId = New
+conversation
+
+STEP 6: Replace MemorySaver MemorySaver (RAM) ↓ MongoDBSaver
+(Persistent)
+
+Stores: - Messages - Tool Calls - Tool Results - Interrupt State -
+Resume State
+
+STEP 7: Conversation History Create chat_threads collection.
+
+Fields: - threadId - userId - title - lastMessage - lastActiveAt -
+status
+
+Frontend should use this collection.
+
+STEP 8: Long-Term Memory Create user_memories collection.
+
+Store only: - Preferences - User Role - Stable Facts - Permanent
+Instructions
+
+Do NOT save every chat message.
+
+STEP 9: Human Approval User ↓ Interrupt ↓ Pending Approval ↓ Frontend
+Approval ↓ Approve / Reject ↓ Resume Graph
+
+STEP 10: Cleanup Policy Run daily cleanup job.
+
+Delete: - Inactive checkpoints older than 30/40/60 days
+
+Do NOT delete: - Active threads - Waiting approval threads
+
+STEP 11: Production Security - JWT - RBAC - Tool Authorization - Zod
+Validation - Rate Limiting - Audit Logging - AsyncLocalStorage - Central
+Error Handling
+
+STEP 12: Streaming Add: - SSE or - WebSockets
+
+STEP 13: Observability - Structured Logs - Request ID - Tool Logs -
+Metrics - OpenTelemetry - Health Checks
+
+STEP 14: Deployment Deploy: Frontend ↓ Gateway ↓ LangGraph ↓ MCP Servers
+↓ MongoDB
+
+Add: - Docker - CI/CD - Env Validation - Secrets Management - Monitoring
+
+Final Learning Order 1. Finish Backend 2. Dummy APIs 3. Frontend 4.
+Connect Frontend 5. Replace with LangGraph 6. MongoDBSaver 7.
+Conversation History 8. Long-Term Memory 9. Human Approval UI 10.
+Cleanup Jobs 11. Security 12. Streaming 13. Monitoring 14. Deployment
+
+Golden Rule: Build a working product first. Then make it
+production-ready.
