@@ -1,5 +1,6 @@
  "use client";
 
+import { useProfile } from "@/features/profile/hooks";
 import { usePathname } from "next/navigation";
 
 const PAGE_TITLES: Record<string, string> = {
@@ -13,13 +14,17 @@ const PAGE_TITLES: Record<string, string> = {
 
 export default function Header() {
   const pathname = usePathname();
+  const { data: profile, isLoading } = useProfile();
+  console.log('profiledata',profile)
 
   return (
     <header className="h-16 border-b bg-white px-6 flex items-center justify-between">
       <h2 className="font-semibold text-lg">
         {PAGE_TITLES[pathname] || "AI MCP"}
       </h2>
-
+        <span className="text-sm text-gray-600">
+          {isLoading ? "Loading..." : profile?.name}
+        </span>
       <button className="bg-slate-900 text-white px-4 py-2 rounded">
         Logout
       </button>
