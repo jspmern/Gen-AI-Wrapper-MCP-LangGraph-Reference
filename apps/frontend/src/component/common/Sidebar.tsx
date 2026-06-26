@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SIDEBAR_MENU } from "../lib/route";
+import { SIDEBAR_MENU } from "../../lib/route";
  
 
 export default function Sidebar() {
