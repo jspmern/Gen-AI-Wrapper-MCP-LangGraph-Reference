@@ -24,6 +24,7 @@
     "@langchain/openai": "^1.4.7",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "langsmith": "^0.7.12",
     "mongodb": "^7.3.0",
     "openai": "^6.43.0"
   },
