@@ -6,6 +6,6 @@ export function GET()
     return NextResponse.json({
         success:true,
         message:"Chat Histroy successfully fetched",
-        mockChatHistory
+        data:mockChatHistory
     })
 }

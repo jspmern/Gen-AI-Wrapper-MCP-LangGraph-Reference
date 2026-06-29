@@ -1,37 +1,108 @@
-import { NextRequest, NextResponse } from "next/server";
- 
-import { createMockAiResponse } from "@/mocks/chat.mock";
+import { NextRequest } from "next/server";
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
- 
+function sseData(data: unknown) {
+  return `data: ${JSON.stringify(data)}\n\n`;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
     if (!body.message || typeof body.message !== "string") {
-       return NextResponse.json(
-    {
-      success: false,
-      message:"message is required",
-      status:400
-    }
-  );
+      return Response.json(
+        {
+          success: false,
+          message: "Message is required",
+        },
+        { status: 400 }
+      );
     }
 
-    const aiResponse = createMockAiResponse(body.message);
-     return NextResponse.json(
-    {
-      success: true,
-      message:"AI response generated successfully",
-       aiResponse,
-    })
+    const encoder = new TextEncoder();
 
+    const stream = new ReadableStream({
+      async start(controller) {
+        const chunks = [
+          "I am checking your request. ",
+          "This is a dummy streaming response. ",
+          `You asked: "${body.message}". `,
+          "Later this will come from LangGraph + MCP tools.",
+        ];
+
+        controller.enqueue(
+          encoder.encode(
+            sseData({
+              type: "start",
+              messageId: `msg_${Date.now()}`,
+            })
+          )
+        );
+
+        for (const chunk of chunks) {
+          await sleep(500);
+
+          controller.enqueue(
+            encoder.encode(
+              sseData({
+                type: "token",
+                content: chunk,
+              })
+            )
+          );
+        }
+
+        await sleep(300);
+
+        controller.enqueue(
+          encoder.encode(
+            sseData({
+              type: "tool",
+              toolCall: {
+                id: "tool_001",
+                name: "get_employee",
+                status: "completed",
+                input: {
+                  employeeId: "emp_001",
+                },
+                output: {
+                  name: "Rahul Sharma",
+                  department: "Engineering",
+                },
+              },
+            })
+          )
+        );
+
+        controller.enqueue(
+          encoder.encode(
+            sseData({
+              type: "done",
+            })
+          )
+        );
+
+        controller.close();
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+      },
+    });
   } catch {
-       return NextResponse.json(
-    {
-      success: false,
-      message:"invalid request body",
-      status:400
-    })
+    return Response.json(
+      {
+        success: false,
+        message: "Invalid request body",
+      },
+      { status: 400 }
+    );
   }
 }
